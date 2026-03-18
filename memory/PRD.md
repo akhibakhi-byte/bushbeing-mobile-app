@@ -59,5 +59,10 @@ frontend/
 
 ## Status
 - Frontend: ✅ Fully built and functional
-- Backend connectivity: ⚠️ External backend temporarily unavailable (404)
+- Backend: ✅ Full backend built locally (FastAPI + MongoDB) with all endpoints
+- Auth: ✅ Login, Register with OTP, Forgot Password all working
+- Plant CRUD: ✅ Create, Read, Update, Delete plants
+- PlantNet Integration: ✅ Plant identification via PlantNet API
+- Watering: ✅ Water toggle, watering logs, historical watering
+- Health Journal: ✅ Create/view/delete health log entries
 - All UI screens render correctly with proper dark theme and emerald green accent
