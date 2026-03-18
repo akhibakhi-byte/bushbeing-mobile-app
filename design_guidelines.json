@@ -1,0 +1,185 @@
+{
+  "identity": {
+    "name": "bushbeing",
+    "tagline": "Nurture your indoor garden with intelligent plant care",
+    "persona": "The Digital Botanist - Intelligent, Calm, Dark-Mode Native",
+    "tone": "Nurturing, Precision-focused, Atmospheric"
+  },
+  "theme": "dark_mode_only",
+  "palette": {
+    "background": "#1A1A1A",
+    "surface": "#262626",
+    "surface_highlight": "#333333",
+    "primary": "#10B981",
+    "primary_glow": "rgba(16, 185, 129, 0.5)",
+    "primary_dim": "#059669",
+    "text_primary": "#F3F4F6",
+    "text_secondary": "#9CA3AF",
+    "text_tertiary": "#6B7280",
+    "border": "rgba(64, 64, 64, 0.5)",
+    "error": "#EF4444",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "overlay": "rgba(0,0,0,0.7)"
+  },
+  "typography": {
+    "font_family": "System",
+    "weights": {
+      "regular": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700",
+      "heavy": "800"
+    },
+    "sizes": {
+      "h1": {
+        "size": 32,
+        "line_height": 38,
+        "tracking": 0.5
+      },
+      "h2": {
+        "size": 24,
+        "line_height": 32,
+        "tracking": 0.5
+      },
+      "h3": {
+        "size": 20,
+        "line_height": 28,
+        "tracking": 0
+      },
+      "body_lg": {
+        "size": 18,
+        "line_height": 26,
+        "tracking": 0
+      },
+      "body": {
+        "size": 16,
+        "line_height": 24,
+        "tracking": 0
+      },
+      "caption": {
+        "size": 14,
+        "line_height": 20,
+        "tracking": 0
+      },
+      "tiny": {
+        "size": 12,
+        "line_height": 16,
+        "tracking": 0.5
+      }
+    }
+  },
+  "layout": {
+    "spacing": {
+      "xs": 4,
+      "s": 8,
+      "m": 16,
+      "l": 24,
+      "xl": 32,
+      "xxl": 48
+    },
+    "radius": {
+      "s": 8,
+      "m": 12,
+      "l": 16,
+      "xl": 24,
+      "pill": 9999
+    },
+    "touch_target": 44,
+    "safe_area_padding": true
+  },
+  "components": {
+    "button": {
+      "primary": {
+        "bg": "#10B981",
+        "text": "#FFFFFF",
+        "radius": 9999,
+        "height": 56,
+        "shadow": {
+          "shadowColor": "#10B981",
+          "shadowOffset": { "width": 0, "height": 4 },
+          "shadowOpacity": 0.3,
+          "shadowRadius": 8,
+          "elevation": 8
+        }
+      },
+      "secondary": {
+        "bg": "#333333",
+        "text": "#F3F4F6",
+        "radius": 9999,
+        "height": 56
+      },
+      "ghost": {
+        "bg": "transparent",
+        "text": "#10B981"
+      }
+    },
+    "card": {
+      "bg": "#262626",
+      "border": "rgba(64, 64, 64, 0.5)",
+      "radius": 16,
+      "padding": 16,
+      "shadow": {
+        "shadowColor": "#000",
+        "shadowOffset": { "width": 0, "height": 2 },
+        "shadowOpacity": 0.1,
+        "shadowRadius": 4,
+        "elevation": 2
+      }
+    },
+    "input": {
+      "bg": "#262626",
+      "border": "#404040",
+      "text": "#F3F4F6",
+      "placeholder": "#6B7280",
+      "radius": 12,
+      "height": 50,
+      "padding_horizontal": 16
+    }
+  },
+  "assets": {
+    "backgrounds": {
+      "auth": "https://customer-assets.emergentagent.com/job_greenthumb-36/artifacts/ja89o0pk_indoor-plants-studio.jpg",
+      "devices": "https://customer-assets.emergentagent.com/job_dd7cb811-ca16-4720-a762-7f0b1fb7bdb4/artifacts/w5mp5157_1772521930338.png"
+    },
+    "placeholders": {
+      "plant_default": "https://images.unsplash.com/photo-1753791271899-21e35ea8d57e?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "room_living": "https://images.unsplash.com/photo-1632771094874-eb4eb25d105b?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "room_bedroom": "https://images.unsplash.com/photo-1660327413070-c771d88ab7fe?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "room_office": "https://images.unsplash.com/photo-1691397761572-519535bc8049?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "room_balcony": "https://images.unsplash.com/photo-1767551719616-c3008831023d?crop=entropy&cs=srgb&fm=jpg&q=85"
+    }
+  },
+  "screen_specs": {
+    "auth": {
+      "style": "Cover background with bottom sheet overlay",
+      "overlay_opacity": 0.6,
+      "logo_position": "top_center"
+    },
+    "home": {
+      "grid_columns": 2,
+      "card_aspect_ratio": 0.75,
+      "header_style": "Large greeting with subtle gradient text"
+    },
+    "detail": {
+      "hero_height": 300,
+      "hero_style": "Parallax scroll header",
+      "content_radius": "Top corners rounded 32px"
+    },
+    "add_plant": {
+      "step_indicator": "Progress dots",
+      "camera_frame": "Rounded square with corner brackets"
+    }
+  },
+  "universal_guidelines": [
+    "DO NOT use CSS, HTML tags, or className. Use React Native View, Text, StyleSheet.",
+    "Use SafeAreaView for all top-level screen containers.",
+    "Use KeyboardAvoidingView for all form screens.",
+    "Touch targets must be at least 44x44 points.",
+    "All interactive elements must have activeOpacity={0.7} or similar feedback.",
+    "Use data-testid on all interactive elements.",
+    "Images must be responsive or have fixed aspect ratios.",
+    "Text must not overlay images without a scrim/overlay gradient for readability.",
+    "Use 'lucide-react-native' for icons (size 24 default)."
+  ]
+}
