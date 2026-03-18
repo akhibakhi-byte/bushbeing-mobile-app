@@ -10,10 +10,11 @@ import { useAuth } from '../src/AuthContext';
 import { Colors, Spacing, Radius } from '../src/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { width, height } = Dimensions.get('window');
 const BG_IMAGE = 'https://customer-assets.emergentagent.com/job_greenthumb-36/artifacts/ja89o0pk_indoor-plants-studio.jpg';
 
 type Mode = 'login' | 'register' | 'otp' | 'forgot';
+
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
 export default function AuthScreen() {
   const { login, requestOtp, verifyOtp, resendOtp, forgotPassword } = useAuth();
@@ -21,6 +22,8 @@ export default function AuthScreen() {
   const [mode, setMode] = useState<Mode>('login');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Login
   const [loginEmail, setLoginEmail] = useState('');
@@ -30,6 +33,7 @@ export default function AuthScreen() {
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
 
   // OTP
   const [otp, setOtp] = useState(['', '', '', '']);
@@ -40,23 +44,47 @@ export default function AuthScreen() {
   // Forgot
   const [forgotEmail, setForgotEmail] = useState('');
 
+  const clearErrors = () => setErrors({});
+
   const startResendTimer = () => {
     setCanResend(false);
     setResendTimer(120);
     const interval = setInterval(() => {
       setResendTimer(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setCanResend(true);
-          return 0;
-        }
+        if (prev <= 1) { clearInterval(interval); setCanResend(true); return 0; }
         return prev - 1;
       });
     }, 1000);
   };
 
+  const validateLogin = (): boolean => {
+    const errs: Record<string, string> = {};
+    if (!loginEmail.trim()) errs.loginEmail = 'Email is required';
+    else if (!isValidEmail(loginEmail)) errs.loginEmail = 'Enter a valid email address';
+    if (!loginPassword) errs.loginPassword = 'Password is required';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const validateRegister = (): boolean => {
+    const errs: Record<string, string> = {};
+    if (!regName.trim()) errs.regName = 'Name is required';
+    else if (regName.trim().length < 2) errs.regName = 'Name must be at least 2 characters';
+    if (!regEmail.trim()) errs.regEmail = 'Email is required';
+    else if (!isValidEmail(regEmail)) errs.regEmail = 'Enter a valid email address';
+    if (!regPassword) errs.regPassword = 'Password is required';
+    else {
+      const s = getPasswordStrength(regPassword);
+      if (s.score < 5) errs.regPassword = 'Password does not meet requirements';
+    }
+    if (!regConfirmPassword) errs.regConfirmPassword = 'Confirm your password';
+    else if (regPassword !== regConfirmPassword) errs.regConfirmPassword = 'Passwords do not match';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleLogin = async () => {
-    if (!loginEmail || !loginPassword) return Alert.alert('Error', 'Please fill all fields');
+    if (!validateLogin()) return;
     setLoading(true);
     try {
       await login(loginEmail.trim(), loginPassword);
@@ -69,9 +97,7 @@ export default function AuthScreen() {
   };
 
   const handleRegister = async () => {
-    if (!regName || !regEmail || !regPassword) return Alert.alert('Error', 'Please fill all fields');
-    const strength = getPasswordStrength(regPassword);
-    if (strength.score < 5) return Alert.alert('Weak Password', 'Password needs min 8 chars, uppercase, lowercase, number, and special char');
+    if (!validateRegister()) return;
     setLoading(true);
     try {
       await requestOtp(regEmail.trim(), regName.trim(), regPassword);
@@ -86,7 +112,7 @@ export default function AuthScreen() {
 
   const handleOtp = async () => {
     const code = otp.join('');
-    if (code.length < 4) return Alert.alert('Error', 'Enter 4-digit OTP');
+    if (code.length < 4) return Alert.alert('Error', 'Enter the full 4-digit OTP');
     setLoading(true);
     try {
       await verifyOtp(regEmail.trim(), code, regName.trim(), regPassword);
@@ -110,7 +136,8 @@ export default function AuthScreen() {
   };
 
   const handleForgot = async () => {
-    if (!forgotEmail) return Alert.alert('Error', 'Enter your email');
+    if (!forgotEmail.trim()) return setErrors({ forgotEmail: 'Email is required' });
+    if (!isValidEmail(forgotEmail)) return setErrors({ forgotEmail: 'Enter a valid email' });
     setLoading(true);
     try {
       await forgotPassword(forgotEmail.trim());
@@ -144,9 +171,13 @@ export default function AuthScreen() {
 
   const pwStrength = getPasswordStrength(regPassword);
 
+  const ErrorText = ({ field }: { field: string }) => (
+    errors[field] ? <Text style={styles.errorText}>{errors[field]}</Text> : null
+  );
+
   const renderLogin = () => (
     <View>
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, errors.loginEmail && styles.inputWrapError]}>
         <Feather name="mail" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
         <TextInput
           testID="login-email-input"
@@ -154,12 +185,14 @@ export default function AuthScreen() {
           placeholder="Email"
           placeholderTextColor={Colors.textTertiary}
           value={loginEmail}
-          onChangeText={setLoginEmail}
+          onChangeText={t => { setLoginEmail(t); clearErrors(); }}
           keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
         />
       </View>
-      <View style={styles.inputWrap}>
+      <ErrorText field="loginEmail" />
+      <View style={[styles.inputWrap, errors.loginPassword && styles.inputWrapError]}>
         <Feather name="lock" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
         <TextInput
           testID="login-password-input"
@@ -167,14 +200,17 @@ export default function AuthScreen() {
           placeholder="Password"
           placeholderTextColor={Colors.textTertiary}
           value={loginPassword}
-          onChangeText={setLoginPassword}
+          onChangeText={t => { setLoginPassword(t); clearErrors(); }}
           secureTextEntry={!showPassword}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
         <TouchableOpacity testID="toggle-password-btn" onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
           <Feather name={showPassword ? 'eye' : 'eye-off'} size={18} color={Colors.textTertiary} />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity testID="forgot-password-link" onPress={() => setMode('forgot')}>
+      <ErrorText field="loginPassword" />
+      <TouchableOpacity testID="forgot-password-link" onPress={() => { setMode('forgot'); clearErrors(); }}>
         <Text style={styles.forgotText}>Forgot Password?</Text>
       </TouchableOpacity>
       <TouchableOpacity testID="login-submit-btn" style={styles.primaryBtn} onPress={handleLogin} disabled={loading} activeOpacity={0.7}>
@@ -185,7 +221,7 @@ export default function AuthScreen() {
 
   const renderRegister = () => (
     <View>
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, errors.regName && styles.inputWrapError]}>
         <Feather name="user" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
         <TextInput
           testID="register-name-input"
@@ -193,10 +229,11 @@ export default function AuthScreen() {
           placeholder="Full Name"
           placeholderTextColor={Colors.textTertiary}
           value={regName}
-          onChangeText={setRegName}
+          onChangeText={t => { setRegName(t); clearErrors(); }}
         />
       </View>
-      <View style={styles.inputWrap}>
+      <ErrorText field="regName" />
+      <View style={[styles.inputWrap, errors.regEmail && styles.inputWrapError]}>
         <Feather name="mail" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
         <TextInput
           testID="register-email-input"
@@ -204,12 +241,14 @@ export default function AuthScreen() {
           placeholder="Email"
           placeholderTextColor={Colors.textTertiary}
           value={regEmail}
-          onChangeText={setRegEmail}
+          onChangeText={t => { setRegEmail(t); clearErrors(); }}
           keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
         />
       </View>
-      <View style={styles.inputWrap}>
+      <ErrorText field="regEmail" />
+      <View style={[styles.inputWrap, errors.regPassword && styles.inputWrapError]}>
         <Feather name="lock" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
         <TextInput
           testID="register-password-input"
@@ -217,13 +256,16 @@ export default function AuthScreen() {
           placeholder="Password"
           placeholderTextColor={Colors.textTertiary}
           value={regPassword}
-          onChangeText={setRegPassword}
+          onChangeText={t => { setRegPassword(t); clearErrors(); }}
           secureTextEntry={!showPassword}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
           <Feather name={showPassword ? 'eye' : 'eye-off'} size={18} color={Colors.textTertiary} />
         </TouchableOpacity>
       </View>
+      <ErrorText field="regPassword" />
       {regPassword.length > 0 && (
         <View style={styles.strengthWrap}>
           <View style={styles.strengthBar}>
@@ -245,7 +287,25 @@ export default function AuthScreen() {
           </View>
         </View>
       )}
-      <TouchableOpacity testID="register-submit-btn" style={styles.primaryBtn} onPress={handleRegister} disabled={loading} activeOpacity={0.7}>
+      <View style={[styles.inputWrap, errors.regConfirmPassword && styles.inputWrapError]}>
+        <Feather name="lock" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
+        <TextInput
+          testID="register-confirm-password-input"
+          style={[styles.input, { flex: 1 }]}
+          placeholder="Confirm Password"
+          placeholderTextColor={Colors.textTertiary}
+          value={regConfirmPassword}
+          onChangeText={t => { setRegConfirmPassword(t); clearErrors(); }}
+          secureTextEntry={!showConfirmPassword}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
+          <Feather name={showConfirmPassword ? 'eye' : 'eye-off'} size={18} color={Colors.textTertiary} />
+        </TouchableOpacity>
+      </View>
+      <ErrorText field="regConfirmPassword" />
+      <TouchableOpacity testID="register-submit-btn" style={[styles.primaryBtn, { marginTop: 12 }]} onPress={handleRegister} disabled={loading} activeOpacity={0.7}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>Create Account</Text>}
       </TouchableOpacity>
     </View>
@@ -290,7 +350,7 @@ export default function AuthScreen() {
       <Feather name="key" size={48} color={Colors.primary} style={{ alignSelf: 'center', marginBottom: 16 }} />
       <Text style={styles.otpTitle}>Reset Password</Text>
       <Text style={styles.otpSubtitle}>Enter your email and we'll send a reset link</Text>
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, errors.forgotEmail && styles.inputWrapError]}>
         <Feather name="mail" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
         <TextInput
           testID="forgot-email-input"
@@ -298,15 +358,17 @@ export default function AuthScreen() {
           placeholder="Email"
           placeholderTextColor={Colors.textTertiary}
           value={forgotEmail}
-          onChangeText={setForgotEmail}
+          onChangeText={t => { setForgotEmail(t); clearErrors(); }}
           keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
         />
       </View>
+      <ErrorText field="forgotEmail" />
       <TouchableOpacity testID="forgot-submit-btn" style={styles.primaryBtn} onPress={handleForgot} disabled={loading} activeOpacity={0.7}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>Send Reset Link</Text>}
       </TouchableOpacity>
-      <TouchableOpacity testID="forgot-back-btn" onPress={() => setMode('login')}>
+      <TouchableOpacity testID="forgot-back-btn" onPress={() => { setMode('login'); clearErrors(); }}>
         <Text style={styles.backText}>Back to Login</Text>
       </TouchableOpacity>
     </View>
@@ -319,7 +381,6 @@ export default function AuthScreen() {
       <SafeAreaView style={styles.safe}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-            {/* Logo Area */}
             <View style={styles.logoArea}>
               <View style={styles.logoIcon}>
                 <Feather name="feather" size={32} color={Colors.primary} />
@@ -327,19 +388,16 @@ export default function AuthScreen() {
               <Text style={styles.appName}>bushbeing</Text>
               <Text style={styles.tagline}>Nurture your indoor garden</Text>
             </View>
-
-            {/* Auth Card */}
             <View style={styles.card}>
               {mode === 'otp' ? renderOtp()
                 : mode === 'forgot' ? renderForgot()
                 : (
                   <>
-                    {/* Tabs */}
                     <View style={styles.tabRow}>
-                      <TouchableOpacity testID="login-tab" style={[styles.tab, mode === 'login' && styles.tabActive]} onPress={() => setMode('login')}>
+                      <TouchableOpacity testID="login-tab" style={[styles.tab, mode === 'login' && styles.tabActive]} onPress={() => { setMode('login'); clearErrors(); setShowPassword(false); }}>
                         <Text style={[styles.tabText, mode === 'login' && styles.tabTextActive]}>Sign In</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity testID="register-tab" style={[styles.tab, mode === 'register' && styles.tabActive]} onPress={() => setMode('register')}>
+                      <TouchableOpacity testID="register-tab" style={[styles.tab, mode === 'register' && styles.tabActive]} onPress={() => { setMode('register'); clearErrors(); setShowPassword(false); }}>
                         <Text style={[styles.tabText, mode === 'register' && styles.tabTextActive]}>Register</Text>
                       </TouchableOpacity>
                     </View>
@@ -368,14 +426,16 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: Colors.primary },
   tabText: { fontSize: 15, fontWeight: '600', color: Colors.textSecondary },
   tabTextActive: { color: Colors.white },
-  inputWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: Radius.m, borderWidth: 1, borderColor: Colors.border, marginBottom: 12, height: 50 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: Radius.m, borderWidth: 1, borderColor: Colors.border, marginBottom: 4, height: 50 },
+  inputWrapError: { borderColor: Colors.error },
   inputIcon: { marginLeft: 14 },
   input: { flex: 1, color: Colors.textPrimary, fontSize: 15, paddingHorizontal: 12, height: 50 },
   eyeBtn: { padding: 14 },
-  forgotText: { color: Colors.primary, fontSize: 13, textAlign: 'right', marginBottom: 16, fontWeight: '500' },
-  primaryBtn: { backgroundColor: Colors.primary, height: 52, borderRadius: Radius.pill, justifyContent: 'center', alignItems: 'center', marginTop: 8, shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 },
+  errorText: { color: Colors.error, fontSize: 12, marginBottom: 8, marginLeft: 4 },
+  forgotText: { color: Colors.primary, fontSize: 13, textAlign: 'right', marginBottom: 16, marginTop: 4, fontWeight: '500' },
+  primaryBtn: { backgroundColor: Colors.primary, height: 52, borderRadius: Radius.pill, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
   primaryBtnText: { color: Colors.white, fontSize: 16, fontWeight: '700' },
-  strengthWrap: { marginBottom: 12 },
+  strengthWrap: { marginBottom: 8 },
   strengthBar: { height: 4, backgroundColor: Colors.surfaceHighlight, borderRadius: 2, marginBottom: 8, overflow: 'hidden' },
   strengthFill: { height: 4, borderRadius: 2 },
   strengthChecks: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
