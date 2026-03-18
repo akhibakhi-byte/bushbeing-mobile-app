@@ -57,12 +57,29 @@ frontend/
 - Watering Logs: list, delete
 - Health Logs: create, list, delete
 
+## Enhancements (v2)
+1. Room editing (add/rename/delete) with edit icon on filter bar
+2. Plant edit modal shows room pills + manage rooms link
+3. Water success/undo toast messages
+4. Water sound (expo-av) plays when watering
+5. Change password in drawer menu
+6. Drawer-style menu (slides from right, dismisses on outside click)
+7. Bottom tabs repositioned for better fit
+8. Room names centered in pills
+9. Register has confirm password field
+10. Input validation (email format, required fields, password strength)
+11. Password masked by default with toggle
+12. Cleaner dashboard header spacing
+13. Redesigned camera/upload buttons as cards
+14. Push notifications for watering reminders (expo-notifications)
+
 ## Status
-- Frontend: ✅ Fully built and functional
-- Backend: ✅ Full backend built locally (FastAPI + MongoDB) with all endpoints
-- Auth: ✅ Login, Register with OTP, Forgot Password all working
-- Plant CRUD: ✅ Create, Read, Update, Delete plants
+- Frontend: ✅ Fully built with all 14 enhancements (26/26 tests passed)
+- Backend: ✅ Full backend built locally (FastAPI + MongoDB) with all 18+ endpoints
+- Auth: ✅ Login, Register with OTP + confirm password, Forgot Password, Change Password
+- Plant CRUD: ✅ Create, Read, Update, Delete with room assignment
 - PlantNet Integration: ✅ Plant identification via PlantNet API
-- Watering: ✅ Water toggle, watering logs, historical watering
+- Watering: ✅ Water toggle with sound + toast, watering logs, historical watering
 - Health Journal: ✅ Create/view/delete health log entries
+- Notifications: ✅ Push notifications scheduled for watering reminders
 - All UI screens render correctly with proper dark theme and emerald green accent
