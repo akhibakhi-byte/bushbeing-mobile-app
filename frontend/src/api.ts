@@ -34,8 +34,14 @@ class ApiClient {
     const response = await fetch(`${API_URL}${path}`, config);
 
     if (response.status === 401) {
-      this.onUnauthorized?.();
-      throw new Error('Unauthorized');
+      // Parse the actual error message from backend
+      const error = await response.json().catch(() => ({ detail: 'Invalid email or password' }));
+      const message = error.detail || 'Invalid email or password';
+      // Only trigger onUnauthorized for non-auth endpoints (i.e., expired token)
+      if (!path.startsWith('/auth/')) {
+        this.onUnauthorized?.();
+      }
+      throw new Error(message);
     }
 
     if (!response.ok) {

@@ -1,0 +1,181 @@
+original_problem_statement:
+## Project Overview
+
+Build a native mobile app called **bushbeing** using Expo (React Native). The app is an indoor plant management tool.
+
+**Tagline:** Nurture your indoor garden with intelligent plant care
+
+## PRODUCT REQUIREMENTS
+
+### Screens & Navigation (Bottom Tab Navigation)
+1.  **Auth (Login/Register)**: Multi-step registration with OTP, login, forgot/change password.
+2.  **My Plants (Home)**: Main dashboard with a grid of user's plants, filterable by room. FAB to add a new plant.
+3.  **Add Plant**: Multi-step flow to upload plant photos, get AI-based identification (PlantNet), and save the new plant.
+4.  **Plant Detail**: View plant details, care info, quick actions (water, edit, delete), and a health journal.
+5.  **Hydrate**: A screen to track watering schedules, view today's progress, and log watering for past/present dates.
+6.  **Nurture**: A dashboard for garden-wide stats and plant health cards with care tips.
+7.  **Devices**: A Coming Soon placeholder screen for a future smart device integration.
+
+### Feature Enhancements Requested by User:
+1.  **Room Management**: Add, remove, or edit rooms from the My Plants screen.
+2.  **Plant Edit Flow**: Allow changing a plant's room from a list of available rooms in the edit menu.
+3.  **Watering Feedback**: Show success/undo messages and play a sound when a plant is watered.
+4.  **Audio on Water**: Play a specific sound file () when watering.
+5.  **Change Password**: Implement a functional Change Password option in a menu.
+6.  **Drawer Menu**: Implement a side drawer menu on the main screen that can be dismissed by clicking outside.
+7.  **UI Adjustments**: Move bottom tabs up for better screen fit and center-align room name text.
+8.  **Auth UI/UX**: Add a repeat password field on registration, add input validation, and fix the password masking toggle.
+9.  **UI Polish**: Improve spacing on dashboard top bars and redesign the Open Camera and Upload Picture buttons.
+10. **Push Notifications**: Send push notifications for watering reminders.
+11. **Error Notifications**: Display inline error banners on the Sign In and Register screens for unsuccessful attempts, instead of using system alerts.
+
+**User's preferred language**: English
+
+**what currently exists?**
+A full-stack Expo (React Native) application for indoor plant management named **bushbeing**.
+
+-   **Frontend**: A complete 7-screen mobile app built with Expo and React Native, featuring a dark mode theme. It includes full authentication, plant and room management, watering schedules, a health journal, and push notifications. All 14 user-requested enhancements, including UI/UX improvements and inline error notifications, have been implemented.
+-   **Backend**: A complete FastAPI backend built from scratch to replace an unreliable external API. It handles authentication (JWT-based with OTP), CRUD operations for plants, rooms, watering logs, and health logs, and integrates with the PlantNet API for plant identification. It runs locally within the project environment.
+-   **Database**: A local MongoDB instance is used for data persistence.
+
+**Last working item**:
+    - Last item agent was working: The agent was working on improving the user experience on the authentication screen. The task was to replace the native  popups with a more integrated, non-blocking inline error banner for failed login or registration attempts. This involved modifying  to include the banner component and updating  to correctly parse and propagate detailed error messages from the backend API.
+    - Status: USER VERIFICATION PENDING
+    - Agent Testing Done: Y
+    - Which testing method agent to use? NA
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+There are no pending or in-progress issues. All user requests and identified problems have been addressed.
+
+**In progress Task List**:
+There are no tasks currently in progress.
+
+**Upcoming and Future Tasks**
+*   **P0 - Implement Devices Screen**: The  tab is currently a Coming Soon placeholder. The next step is to build out the functionality as per the original problem statement, which involves a survey link.
+*   **P1 - Test Plant Identification**: The PlantNet integration () is implemented in the backend but has not been tested with real-world plant photos from the frontend flow. This needs end-to-end verification.
+*   **P2 - Implement Offline Mode**: The app currently requires a network connection to function. A future enhancement would be to add offline support, allowing users to view cached plant data and log care activities that sync when the connection is restored.
+*   **P3 - Gamification (Streak Tracking)**: To increase user engagement, a plant care streak feature could be added to gamify the watering process (e.g., 7-day watering streak!).
+
+**Completed work in this session**
+- **Backend Reconstruction**: Built a complete, local FastAPI backend () to replace the original, non-functional external API. This included all auth, plant, room, and logging endpoints.
+- **Full Frontend Implementation**: Created all 7 screens as per the project requirements using Expo and React Native.
+- **Authentication Flow**: Implemented a complete authentication system with registration (OTP via email), login, and secure token management.
+- **Room Management Feature**: Added functionality to create, rename, and delete rooms via a modal on the My Plants screen ().
+- **Watering Feedback System**: Implemented toast messages and audio feedback for watering actions (, ).
+- **Drawer Menu**: Added a side drawer menu for settings and logout on the main screen ().
+- **Push Notifications**: Integrated  to schedule and send watering reminders ().
+- **Auth UI/UX Enhancements**: Added a repeat password field, input validation, and fixed password masking on the auth screen ().
+- **UI/UX Polish**: Refined layouts, spacing, and button designs across multiple screens.
+- **Inline Error Notifications**: Replaced system alerts with an inline error banner on the auth screen for a better user experience (, ).
+
+**Earlier issues found/mentioned but not fixed**
+- **Expo AV Deprecation**: The logs show a warning: . The  package is currently used for playing the watering sound. This should be updated to  to prevent future compatibility issues.
+  - **Debug checklist**:
+    - Check  for .
+    - Replace it with .
+    - Update  to use the new  API for loading and playing sounds.
+  - **Why to solve this issue and what will be achieved with this?**: To ensure long-term stability and compatibility with future Expo SDK versions.
+  - **Should Test frontend/backend/both after fix**: Frontend.
+  - **Is recurring issue?**: N
+
+**Known issue recurrence from previous fork**
+None. This is the first summary.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Frontend**: React Native, Expo, Expo Router (file-based routing), TypeScript
+- **Backend**: Python, FastAPI, Pydantic
+- **Database**: MongoDB
+- **Authentication**: JWT (JSON Web Tokens) with OTP (One-Time Password) email verification.
+- **State Management**: React Context API ()
+- **Styling**: React Native 
+
+**key DB schema**
+- **users**: 
+- **otps**: 
+- **plants**: 
+- **rooms**: Stored as a list of strings within a user document or a separate collection (inferred from API).
+- **watering_logs**: 
+- **health_logs**: 
+
+**changes in tech stack**
+- **Backend Shift**: The project pivoted from using a provided, non-functional external backend to a self-hosted, locally built FastAPI backend. This was a critical decision to unblock development.
+
+**All files of reference**
+*   : The complete local backend API logic.
+*   : The authentication screen, including login, registration, and inline error handling.
+*   : The main My Plants screen, which includes the drawer menu, room management modal, and plant grid.
+*   : Manages user authentication state and token storage, now using platform-specific storage ( for web,  for native).
+*   : The API client for making requests to the backend. It was updated to handle detailed error messages.
+*   : Defines the bottom tab navigation structure.
+*   : Logic for scheduling push notifications for watering reminders.
+*   : Logic for playing the watering sound effect.
+*   : Expo configuration file, updated to include permissions for notifications.
+
+**Areas that need refactoring**:
+- **expo-av to expo-audio**: The  library is deprecated and should be replaced with  to ensure future compatibility. This affects .
+- **Image  warning**: Logs show . This should be updated across all image components to follow best practices.
+
+**key api endpoints**
+- 
+- 
+- 
+- 
+- 
+- , , , 
+- 
+- , , , 
+- , 
+- 
+
+**Critical Info for New Agent**
+- **Local Backend is Authoritative**: The project now runs on a local FastAPI backend (). The original external API URL () is defunct. All frontend API calls must point to the local service.
+- **Platform-Specific Storage**: The authentication token storage in  now uses  for web and  for native mobile to ensure persistence works across platforms. This was a critical fix.
+- **Credentials are in **: All necessary keys (JWT secret, PlantNet API, SMTP credentials) are stored in .
+
+**documents and test reports created in this job**
+- : Product Requirements Document created and updated by the agent.
+- : UI/UX design guidelines generated by the design agent.
+- : Initial test report showing the external backend failure.
+- : Test report after building the local backend, identifying the web storage issue.
+- : Final comprehensive test report verifying all 14 enhancements.
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User**: Requested 14 specific feature enhancements and UI/UX improvements. (Status: COMPLETED)
+2.  **User**: Started the enhancement task.
+3.  **Assistant**: Installed dependencies (, , etc.) and retrieved audio asset.
+4.  **Assistant**: Created utility files for sounds and notifications.
+5.  **Assistant**: Rewrote  and .
+6.  **Assistant**: Rewrote the main My Plants screen ().
+7.  **Assistant**: Updated the Plant Detail and Add Plant screens.
+8.  **Assistant**: Updated  for notification permissions and restarted the app.
+9.  **Assistant**: Ran comprehensive tests, which passed (26/26).
+10. **User**: Requested inline error notifications for the auth screen. (Status: COMPLETED)
+
+**Project Health Check:**
+-   **Broken**: The originally specified external backend API is down and has been superseded.
+-   **Mocked**: No components are mocked.
+
+**3rd Party Integrations**
+-   **PlantNet**: Used for plant identification via the backend. The API key is configured in .
+-   **Gmail SMTP**: Used by the backend to send OTP emails for user registration. Credentials are in .
+
+**Testing status**
+-   **Testing agent used after significant changes**: YES. The testing agent was used three times to validate the initial build, the local backend, and the 14 enhancements.
+-   **Troubleshoot agent used after agent stuck in loop**: NO.
+-   **Test files created**:
+    -   
+    -   
+    -   
+-   **Known regressions**: None.
+
+**Credentials to test flow:**
+-   **Email**: 
+-   **Password**: 
+(This user was created during backend testing and has one plant, Monty).
+
+**What agent forgot to execute**
+- The agent received a log warning about  being deprecated but did not act on it. The implementation in  should be updated to use the modern  package.

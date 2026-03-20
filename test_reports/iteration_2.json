@@ -120,7 +120,7 @@
     "base_api_reachable": "✅ GET / returns {message: 'Plant Buddy API', version: '1.0.0'}",
     "login_endpoint": "✅ POST /api/auth/login with testuser123@example.com returns 200 with token",
     "browser_fetch_test": "✅ Direct fetch() call from browser console succeeds",
-    "environment_config": "✅ EXPO_PUBLIC_API_URL correctly set to https://hydrate-preview.preview.emergentagent.com/api"
+    "environment_config": "✅ EXPO_PUBLIC_API_URL correctly set to https://plant-care-dev.preview.emergentagent.com/api"
   },
   
   "seed_data_creation": "Backend has existing test user: testuser123@example.com with plant 'Monty' in 'Living Room' room. Test data created during pytest runs (with TEST_ prefix) is cleaned up after each test.",

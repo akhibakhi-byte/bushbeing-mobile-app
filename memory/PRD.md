@@ -7,7 +7,7 @@ bushbeing is a native mobile app built with Expo (React Native) for indoor plant
 
 ## Tech Stack
 - **Frontend:** Expo SDK 54, React Native, expo-router (file-based routing)
-- **Backend:** External deployed FastAPI at `https://smart-detect-flow.preview.emergentagent.com/api`
+- **Backend:** External deployed FastAPI at `https://plant-care-dev.preview.emergentagent.com/api`
 - **Auth:** JWT tokens stored in expo-secure-store
 - **Images:** expo-image-picker (camera + gallery), stored as base64
 

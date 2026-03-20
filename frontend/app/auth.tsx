@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Dimensions,
+  Animated,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -43,6 +44,24 @@ export default function AuthScreen() {
 
   // Forgot
   const [forgotEmail, setForgotEmail] = useState('');
+
+  // Error notification banner
+  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const errorOpacity = useRef(new Animated.Value(0)).current;
+
+  const showErrorBanner = (message: string) => {
+    setErrorBanner(message);
+    errorOpacity.setValue(0);
+    Animated.sequence([
+      Animated.timing(errorOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+      Animated.delay(4000),
+      Animated.timing(errorOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setErrorBanner(null));
+  };
+
+  const dismissErrorBanner = () => {
+    Animated.timing(errorOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => setErrorBanner(null));
+  };
 
   const clearErrors = () => setErrors({});
 
@@ -90,7 +109,7 @@ export default function AuthScreen() {
       await login(loginEmail.trim(), loginPassword);
       router.replace('/(tabs)');
     } catch (e: any) {
-      Alert.alert('Login Failed', e.message);
+      showErrorBanner(e.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -104,7 +123,7 @@ export default function AuthScreen() {
       setMode('otp');
       startResendTimer();
     } catch (e: any) {
-      Alert.alert('Registration Failed', e.message);
+      showErrorBanner(e.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -112,13 +131,13 @@ export default function AuthScreen() {
 
   const handleOtp = async () => {
     const code = otp.join('');
-    if (code.length < 4) return Alert.alert('Error', 'Enter the full 4-digit OTP');
+    if (code.length < 4) { showErrorBanner('Please enter the full 4-digit OTP'); return; }
     setLoading(true);
     try {
       await verifyOtp(regEmail.trim(), code, regName.trim(), regPassword);
       router.replace('/(tabs)');
     } catch (e: any) {
-      Alert.alert('Verification Failed', e.message);
+      showErrorBanner(e.message || 'Invalid OTP. Please check and try again.');
     } finally {
       setLoading(false);
     }
@@ -144,7 +163,7 @@ export default function AuthScreen() {
       Alert.alert('Success', 'Reset link sent to your email');
       setMode('login');
     } catch (e: any) {
-      Alert.alert('Error', e.message);
+      showErrorBanner(e.message || 'Failed to send reset link. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -378,6 +397,20 @@ export default function AuthScreen() {
     <View style={styles.container}>
       <Image source={{ uri: BG_IMAGE }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
       <View style={[StyleSheet.absoluteFillObject, { backgroundColor: Colors.overlay }]} />
+
+      {/* Error Banner */}
+      {errorBanner && (
+        <Animated.View style={[styles.errorBannerWrap, { opacity: errorOpacity }]}>
+          <TouchableOpacity testID="error-banner" style={styles.errorBanner} onPress={dismissErrorBanner} activeOpacity={0.9}>
+            <Feather name="alert-circle" size={20} color={Colors.white} />
+            <Text style={styles.errorBannerText}>{errorBanner}</Text>
+            <TouchableOpacity testID="dismiss-error-banner" onPress={dismissErrorBanner}>
+              <Feather name="x" size={18} color="rgba(255,255,255,0.7)" />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
       <SafeAreaView style={styles.safe}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
@@ -415,6 +448,10 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   safe: { flex: 1 },
+  // Error Banner
+  errorBannerWrap: { position: 'absolute', top: 50, left: 16, right: 16, zIndex: 999 },
+  errorBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#DC2626', paddingHorizontal: 16, paddingVertical: 14, borderRadius: Radius.m },
+  errorBannerText: { flex: 1, color: Colors.white, fontSize: 14, fontWeight: '600', lineHeight: 18 },
   scroll: { flexGrow: 1, justifyContent: 'space-between', padding: Spacing.l },
   logoArea: { alignItems: 'center', marginTop: 40, marginBottom: 24 },
   logoIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(16,185,129,0.15)', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },

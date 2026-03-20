@@ -1,6 +1,6 @@
 """
 Backend API Connectivity Tests for bushbeing
-Tests external backend at https://smart-detect-flow.preview.emergentagent.com/api
+Tests external backend at https://plant-care-dev.preview.emergentagent.com/api
 
 Modules tested:
 - Health check
@@ -21,7 +21,7 @@ import string
 API_URL = os.environ.get('EXPO_PUBLIC_API_URL')
 if not API_URL:
     # Fallback for testing context
-    API_URL = "https://smart-detect-flow.preview.emergentagent.com/api"
+    API_URL = "https://plant-care-dev.preview.emergentagent.com/api"
 
 
 def random_email():
