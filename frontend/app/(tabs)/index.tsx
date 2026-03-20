@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView,
   ActivityIndicator, Dimensions, RefreshControl, Alert, Modal,
   TextInput, Animated, KeyboardAvoidingView, Platform, Pressable,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -58,6 +59,29 @@ export default function MyPlants() {
     ]).start(() => setToast(null));
   };
 
+  const seedingRef = useRef(false);
+
+  const seedDefaultRooms = async (existingRooms: string[]) => {
+    if (seedingRef.current) return;
+    const storageKey = `rooms_seeded_${user?.id}`;
+    const alreadySeeded = await AsyncStorage.getItem(storageKey);
+    if (alreadySeeded) return;
+
+    seedingRef.current = true;
+    try {
+      for (const room of DEFAULT_ROOMS) {
+        if (!existingRooms.includes(room)) {
+          await api.post('/rooms', { name: room });
+        }
+      }
+      await AsyncStorage.setItem(storageKey, 'true');
+    } catch (e: any) {
+      console.log('Seed rooms error:', e.message);
+    } finally {
+      seedingRef.current = false;
+    }
+  };
+
   const fetchData = async () => {
     try {
       const [plantsRes, roomsRes, logsRes] = await Promise.all([
@@ -66,13 +90,20 @@ export default function MyPlants() {
         api.get('/watering-logs'),
       ]);
       setPlants(plantsRes);
-      // Merge default rooms with user-created rooms (no duplicates)
       const userRooms: string[] = roomsRes.rooms || [];
-      const merged = [...DEFAULT_ROOMS];
-      userRooms.forEach((r: string) => {
-        if (!merged.includes(r)) merged.push(r);
-      });
-      setRooms(merged);
+
+      // Seed default rooms into backend on first use
+      const storageKey = `rooms_seeded_${user?.id}`;
+      const alreadySeeded = await AsyncStorage.getItem(storageKey);
+      if (!alreadySeeded) {
+        await seedDefaultRooms(userRooms);
+        // Re-fetch rooms after seeding
+        const updatedRooms = await api.get('/rooms');
+        setRooms(updatedRooms.rooms || []);
+      } else {
+        setRooms(userRooms);
+      }
+
       setWateringLogs(logsRes);
       // Schedule notifications
       const hasPermission = await requestNotificationPermissions();
