@@ -17,6 +17,8 @@ import { requestNotificationPermissions, scheduleWateringReminders } from '../..
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - Spacing.l * 2 - Spacing.m) / 2;
 
+const DEFAULT_ROOMS = ['Living Room', 'Bedroom', 'Study Room', 'Balcony'];
+
 export default function MyPlants() {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -64,7 +66,13 @@ export default function MyPlants() {
         api.get('/watering-logs'),
       ]);
       setPlants(plantsRes);
-      setRooms(roomsRes.rooms || []);
+      // Merge default rooms with user-created rooms (no duplicates)
+      const userRooms: string[] = roomsRes.rooms || [];
+      const merged = [...DEFAULT_ROOMS];
+      userRooms.forEach((r: string) => {
+        if (!merged.includes(r)) merged.push(r);
+      });
+      setRooms(merged);
       setWateringLogs(logsRes);
       // Schedule notifications
       const hasPermission = await requestNotificationPermissions();
